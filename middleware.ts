@@ -1,11 +1,13 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import AppError from "./utils/appError";
+import auth from "./routes/auth.route";
 
 export const middleware = (app: Application) => {
 	app
 		.use(express.json())
 		.use(morgan("dev"))
+		.use("/api/v1", auth)
 
 		// UNHANDLED ROUTE
 

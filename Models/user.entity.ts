@@ -1,0 +1,50 @@
+import { Column, Entity, BeforeInsert, OneToOne, JoinColumn, OneToMany } from "typeorm";
+import { Model } from "./model";
+import bcrypt from "bcrypt";
+import { ProfileEntity } from "./Profile.entity";
+import { WalletEntity } from "./wallet.entity";
+import { HistoryEntity } from "./history.entity";
+
+@Entity("user")
+export class UserEntity extends Model {
+	@Column()
+	name: string;
+
+	@Column({
+		unique: true,
+	})
+	email: string;
+
+	@Column()
+	password: string;
+
+	@Column({
+		default: false,
+	})
+	verified: boolean;
+
+    @OneToOne(()=> ProfileEntity, (profile)=> profile.user)
+    @JoinColumn()
+    profile : ProfileEntity
+
+   @OneToOne(()=> WalletEntity, (wallet)=> wallet.user)
+   @JoinColumn()
+   wallet : WalletEntity
+
+   @OneToMany(()=> HistoryEntity, (history)=> history.user)
+   history : HistoryEntity[]
+    
+
+	@BeforeInsert()
+	async hashPassword() {
+		this.password = await bcrypt.hash(this.password, 12);
+	}
+
+	static async ComparePassword(candidatePassword: string, hashedPassword) {
+		return await bcrypt.compare(candidatePassword, hashedPassword);
+	}
+
+	toJson() {
+		return { ...this, password: undefined, verified: undefined };
+	}
+}
