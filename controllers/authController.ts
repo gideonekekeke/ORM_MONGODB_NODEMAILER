@@ -4,6 +4,9 @@ import { WalletEntity } from "../Models/wallet.entity";
 import { AccountVerification } from "../utils/email";
 import { decodeJwt, signJwtUser } from "../utils/jwts";
 import { sign } from "jsonwebtoken";
+import { ProfileEntity } from "../Models/Profile.entity";
+import streamifier from "streamifier";
+import cloudinary from "../utils/cloudinary";
 
 export const RegisterUser = async (
 	req: Request,
@@ -50,7 +53,6 @@ export const VerifyUser = async (
 ) => {
 	try {
 		const token = req.params.tokenID;
-
 		if (token) {
 			const { name, email, password }: any = decodeJwt(token);
 
@@ -59,7 +61,16 @@ export const VerifyUser = async (
 			user.email = email;
 			user.password = password;
 			user.verified = true;
+			user.save();
 
+			const wall = await WalletEntity.create({
+				walletID: Math.floor(Math.random() * 10000000) + 2000000,
+				Balance: 1000,
+			}).save();
+			await UserEntity.update(user.id, {
+				wallet: wall,
+			});
+			user.wallet = wall;
 			user.save();
 
 			return res.status(200).json({
@@ -92,16 +103,6 @@ export const LoginUser = async (
 			});
 		}
 
-		const wall = await WalletEntity.create({
-			walletID: Math.floor(Math.random() * 10000000) + 2000000,
-		}).save();
-
-		await UserEntity.update(user.id, {
-			wallet: wall,
-		});
-
-		user.wallet = wall;
-		user.save();
 		const token = signJwtUser(
 			{
 				user: user.id,
@@ -121,5 +122,41 @@ export const LoginUser = async (
 	}
 };
 
+export const createProfile = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const id = req.params.id;
+		const { dateOfBirth, bio, BVN, avatar } = req.body;
 
+		const user = await UserEntity.findOneBy({ id });
 
+		let avatarUrl;
+
+		if (!req?.file?.path) {
+			avatarUrl = avatar;
+		} else {
+			let upload = cloudinary.uploader.upload(req?.file?.path);
+			avatarUrl = (await upload).secure_url;
+		}
+
+		const createProfile = await ProfileEntity.create({
+			dateOfBirth,
+			bio,
+			BVN,
+			avatar: avatarUrl,
+		}).save();
+
+		await UserEntity.update(id, {
+			profile: createProfile,
+		});
+
+		return res.status(200).json({
+			message: "Profile updated successful",
+		});
+	} catch (err) {
+		next(err);
+	}
+};

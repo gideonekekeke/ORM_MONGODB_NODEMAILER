@@ -8,7 +8,7 @@ export class ProfileEntity extends Model {
 		default:
 			"https://static.vecteezy.com/system/resources/previews/009/734/564/original/default-avatar-profile-icon-of-social-media-user-vector.jpg",
 	})
-	avtar: string;
+	avatar: string;
 
 	@Column({
 		nullable: true,
