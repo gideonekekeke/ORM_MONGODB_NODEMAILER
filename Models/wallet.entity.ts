@@ -2,16 +2,16 @@ import { Column, Entity, BeforeInsert, OneToOne } from "typeorm";
 import { Model } from "./model";
 import { UserEntity } from "./user.entity";
 
-@Entity("wallet")
+@Entity("wallets")
 export class WalletEntity extends Model {
 	@Column()
-	WalletID: number;
+	walletID: number;
 
 	@Column({
-		default: 1000,
+		default : 1000
 	})
 	Balance: number;
 
-	@OneToOne(() => UserEntity, (user) => user.wallet)
-	user: UserEntity;
+	@OneToOne(() => UserEntity, (userData) => userData.wallet)
+	 user: UserEntity;
 }

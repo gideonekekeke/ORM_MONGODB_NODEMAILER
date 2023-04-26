@@ -1,4 +1,11 @@
-import { Column, Entity, BeforeInsert, OneToOne, JoinColumn, OneToMany } from "typeorm";
+import {
+	Column,
+	Entity,
+	BeforeInsert,
+	OneToOne,
+	JoinColumn,
+	OneToMany,
+} from "typeorm";
 import { Model } from "./model";
 import bcrypt from "bcrypt";
 import { ProfileEntity } from "./Profile.entity";
@@ -23,24 +30,32 @@ export class UserEntity extends Model {
 	})
 	verified: boolean;
 
-    @OneToOne(()=> ProfileEntity, (profile)=> profile.user)
-    @JoinColumn()
-    profile : ProfileEntity
-
-   @OneToOne(()=> WalletEntity, (wallet)=> wallet.user)
-   @JoinColumn()
-   wallet : WalletEntity
-
-   @OneToMany(()=> HistoryEntity, (history)=> history.user)
-   history : HistoryEntity[]
-    
+	@OneToOne(() => ProfileEntity, (profile) => profile.user, {
+		nullable: true,
+       
+	})
+	profile: ProfileEntity;
+	//
+	@OneToOne(() => WalletEntity, (wallet) => wallet.user, {
+		nullable : true
+	})
+	wallet: WalletEntity;
+	//
+	@OneToMany(() => HistoryEntity, (history) => history.user, {
+		nullable: true,
+		eager: true,
+	})
+	history: HistoryEntity[];
 
 	@BeforeInsert()
 	async hashPassword() {
 		this.password = await bcrypt.hash(this.password, 12);
 	}
 
-	static async ComparePassword(candidatePassword: string, hashedPassword) {
+	static async ComparePassword(
+		candidatePassword: string,
+		hashedPassword: string,
+	) {
 		return await bcrypt.compare(candidatePassword, hashedPassword);
 	}
 

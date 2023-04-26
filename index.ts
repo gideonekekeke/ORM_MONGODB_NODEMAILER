@@ -1,6 +1,8 @@
 import express from "express";
 import { middleware } from "./middleware";
 import { dbConfig } from "./utils/dbConfig";
+import dotenv from "dotenv";
+dotenv.config();
 const port = 1448;
 
 const app = express();
@@ -11,8 +13,8 @@ dbConfig
 	.then(() => {
 		console.log("mongodb database is connected");
 	})
-	.catch(() => {
-		console.log("an error occured with the database");
+	.catch((err) => {
+		console.log("an error occured with the database", err);
 	});
 
 const server = app.listen(port, () => {
